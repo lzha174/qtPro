@@ -66,7 +66,7 @@ protected:
     virtual void onEntry(QEvent *)
     {
         machine()->postEvent(new PingEvent());
-        fprintf(stdout, "ping?\n");
+        fprintf(stdout, "ping????\n");
     }
 };
 
@@ -93,7 +93,9 @@ public:
 
 protected:
     virtual bool eventTest(QEvent *e) {
-        return (e->type() == QEvent::User+2);
+        if (e->type() != QEvent::Type(QEvent::User+2)) // StringEvent
+            return false;
+        return true;
     }
     virtual void onTransition(QEvent *)
     {
@@ -102,11 +104,56 @@ protected:
     }
 };
 
+class StringEvent : public QEvent
+{
+public:
+    StringEvent(const QString &val)
+    : QEvent(QEvent::Type(QEvent::User+4)),
+      value(val) {}
+public:
+    QString value;
+};
+
+class MyPinger : public QState
+{
+public:
+    MyPinger()
+        : QState() {}
+
+protected:
+    virtual void onEntry(QEvent *)
+    {
+        machine()->postEvent(new StringEvent("hello"));
+        fprintf(stdout, "hi????\n");
+    }
+};
+
+class StringTransition : public QAbstractTransition
+{
+public:
+    StringTransition(const QString &value)
+        : m_value(value) {}
+
+protected:
+    virtual bool eventTest(QEvent *e)
+    {
+        if (e->type() != QEvent::Type(QEvent::User+4)) // StringEvent
+            return false;
+        StringEvent *se = static_cast<StringEvent*>(e);
+        return (m_value == se->value);
+    }
+
+    virtual void onTransition(QEvent *) {}
+
+private:
+    QString m_value;
+};
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    QStateMachine machine;
+    QStateMachine machine1;
     QState *group = new QState(QState::ParallelStates);
     group->setObjectName("group");
 
@@ -118,9 +165,34 @@ int main(int argc, char **argv)
     ponger->setObjectName("ponger");
     ponger->addTransition(new PingTransition());
 
-    machine.addState(group);
-    machine.setInitialState(group);
-    machine.start();
+    machine1.addState(group);
+    machine1.setInitialState(group);
+    machine1.start();
+
+       QStateMachine machine;
+       MyPinger *s1 = new MyPinger();
+       QState *s2 = new QState();
+       QFinalState *done = new QFinalState();
+
+       StringTransition *t1 = new StringTransition("Hello");
+       t1->setTargetState(s2);
+       s1->addTransition(t1);
+       StringTransition *t2 = new StringTransition("world");
+       t2->setTargetState(done);
+       s2->addTransition(t2);
+
+       machine.addState(s1);
+       machine.addState(s2);
+       machine.addState(done);
+       machine.setInitialState(s1);
+
+       machine.start();
+
+//       s1->machine()->postEvent(new StringEvent("Hello"));
+
+      machine.postEvent(new StringEvent("Hello"));
+       machine.postEvent(new StringEvent("world"));
+
 
     return app.exec();
 }
