@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <qfinalstate.h>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -28,6 +29,20 @@ MainWindow::MainWindow(QWidget *parent) :
     machine.setInitialState(s1);
 
     QObject::connect(&machine, SIGNAL(finished()), this, SLOT(GetHit()));
+
+    QHistoryState *s1h = new QHistoryState(s1);
+
+    QState *s3 = new QState();
+    s3->assignProperty(ui->stateLabel, "text", "In s3");
+    QMessageBox *mbox = new QMessageBox(this);
+    mbox->addButton(QMessageBox::Ok);
+    mbox->setText("Interrupted!");
+    mbox->setIcon(QMessageBox::Information);
+    QObject::connect(s3, SIGNAL(entered()), mbox, SLOT(exec()));
+    s3->addTransition(s1h);
+    machine.addState(s3);
+
+    s1->addTransition(ui->interruptButton, SIGNAL(clicked()), s3);
 
     machine.start();
 

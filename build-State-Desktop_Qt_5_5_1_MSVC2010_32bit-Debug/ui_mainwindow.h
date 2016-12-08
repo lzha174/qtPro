@@ -31,6 +31,7 @@ public:
     QLabel *stateLabel;
     QPushButton *changeState;
     QPushButton *quickB;
+    QPushButton *interruptButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -51,6 +52,9 @@ public:
         quickB = new QPushButton(centralWidget);
         quickB->setObjectName(QStringLiteral("quickB"));
         quickB->setGeometry(QRect(310, 20, 75, 23));
+        interruptButton = new QPushButton(centralWidget);
+        interruptButton->setObjectName(QStringLiteral("interruptButton"));
+        interruptButton->setGeometry(QRect(160, 110, 75, 23));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -74,6 +78,7 @@ public:
         stateLabel->setText(QApplication::translate("MainWindow", "TextLabel", 0));
         changeState->setText(QApplication::translate("MainWindow", "Change State", 0));
         quickB->setText(QApplication::translate("MainWindow", "Quit", 0));
+        interruptButton->setText(QApplication::translate("MainWindow", "Interreupt", 0));
     } // retranslateUi
 
 };
