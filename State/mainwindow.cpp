@@ -34,7 +34,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QState *s3 = new QState();
     s3->assignProperty(ui->stateLabel, "text", "In s3");
-    QMessageBox *mbox = new QMessageBox(this);
+
+    s1->assignProperty(ui->Animate, "geometry", QRectF(40, 160, 150, 30));
+    s3->assignProperty(ui->Animate, "geometry", QRectF(40, 160, 240, 50));
+
+    QSignalTransition *transition = s1->addTransition(ui->Animate, SIGNAL(clicked()), s3);
+    transition->addAnimation(new QPropertyAnimation(ui->Animate, "geometry"));
+
+    QMessageBox *mbox = new QMessageBox(ui->centralWidget);
     mbox->addButton(QMessageBox::Ok);
     mbox->setText("Interrupted!");
     mbox->setIcon(QMessageBox::Information);
